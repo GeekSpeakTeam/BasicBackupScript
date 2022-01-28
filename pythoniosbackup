@@ -2,37 +2,30 @@
 from netmiko import ConnectHandler
 import yaml
 import time
-timestr = time.strftime("%Y%m%d-%H%M%S")
+timestr = time.strftime("%Y%m%d")
 
-
-#Update to your location below
-  
+# Specify YOUR path below
 with open('C:\Python\PythonProjects\ciscoautomation\devices.yaml', 'rt') as file_data:
-#with open('/home/guestshell/automation/devices.yaml', 'rt') as file_data:
     device_list = yaml.safe_load(file_data)
-
+    
+    # Specify YOUR passwords below
     for ip in device_list:
         Router = {
             'device_type': 'cisco_ios',
             'ip': ip,
-            'username': 'put in your username',
-            'password': 'put in your password'
+            'username': 'xx',
+            'password': 'xxx',
+            'secret': 'xxxx'
         }
-
+        
         # Next establish the SSH connection
         net_connect = ConnectHandler(**Router)
-
-        #Discover the hostname from the prompt
-        try:
-            hostname = ip
-            print ("Backing up " + ip)
-        except Exception as e:
-            print ("Error")
-            print (e)
-        
-        #Update to your location below
-        filename = '/Python/PythonProjects/ciscoautomation/backup/' + hostname + " - "+ timestr + '.txt'
-
+        net_connect.enable()
+        hostname = net_connect.send_command("show run | i ^hostname")
+        device = hostname.replace("hostname", "").strip()
+        print ("Backing up " + device)
+        # Specify YOUR path below
+        filename = '/Python/PythonProjects/ciscoautomation/backup/' + device + "-"+ timestr + '.txt'
         showrun = net_connect.send_command('show run')
         showvlan = net_connect.send_command('show vlan')
         showver = net_connect.send_command('show ver')
