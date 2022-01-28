@@ -1,0 +1,48 @@
+# SSH to Multiple Devices from devices file
+from netmiko import ConnectHandler
+import yaml
+import time
+timestr = time.strftime("%Y%m%d-%H%M%S")
+
+
+#Update to your location below
+  
+with open('C:\Python\PythonProjects\ciscoautomation\devices.yaml', 'rt') as file_data:
+#with open('/home/guestshell/automation/devices.yaml', 'rt') as file_data:
+    device_list = yaml.safe_load(file_data)
+
+    for ip in device_list:
+        Router = {
+            'device_type': 'cisco_ios',
+            'ip': ip,
+            'username': 'put in your username',
+            'password': 'put in your password'
+        }
+
+        # Next establish the SSH connection
+        net_connect = ConnectHandler(**Router)
+
+        #Discover the hostname from the prompt
+        try:
+            hostname = ip
+            print ("Backing up " + ip)
+        except Exception as e:
+            print ("Error")
+            print (e)
+        
+        #Update to your location below
+        filename = '/Python/PythonProjects/ciscoautomation/backup/' + hostname + " - "+ timestr + '.txt'
+
+        showrun = net_connect.send_command('show run')
+        showvlan = net_connect.send_command('show vlan')
+        showver = net_connect.send_command('show ver')
+        log_file = open(filename, "a")   # in append mode
+        log_file.write(showrun)
+        log_file.write("\n")
+        log_file.write(showvlan)
+        log_file.write("\n")
+        log_file.write(showver)
+        log_file.write("\n")
+
+        # Finally close the connection
+        net_connect.disconnect()
